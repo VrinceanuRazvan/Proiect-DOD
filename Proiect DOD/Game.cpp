@@ -23,7 +23,7 @@ bool Game::EventHandler()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
-		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN){
+		if (event.type == SDL_EVENT_QUIT) {
 			std::cout << "Click";
 			float x, y;
 			x = event.button.x;
