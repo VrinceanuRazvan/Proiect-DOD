@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-void RenderEntities(SDL_Renderer* renderer, Entity* (&entityArray)[100000], float deltaTime)
+void Renderer::RenderEntities(SDL_Renderer* renderer, Entity* (&entityArray)[100000], float deltaTime)
 {
 	for (int i = 0; i < 100000; i++) {
 		if (entityArray[i] != nullptr) {
@@ -9,7 +9,7 @@ void RenderEntities(SDL_Renderer* renderer, Entity* (&entityArray)[100000], floa
 	}
 }
 
-void RenderEntity(SDL_Renderer* renderer, Entity* entity, float deltaTime)
+void Renderer::RenderEntity(SDL_Renderer* renderer, Entity* entity, float deltaTime)
 {
 	entity->UpdateAnimation(deltaTime);
 
@@ -22,7 +22,7 @@ void RenderEntity(SDL_Renderer* renderer, Entity* entity, float deltaTime)
 	DrawSprite(renderer, texture, position, spriteData);
 }
 
-void DrawSprite(SDL_Renderer* renderer, SDL_Texture* texture, Vector2 position, const SpriteData& spriteData)
+void Renderer::DrawSprite(SDL_Renderer* renderer, SDL_Texture* texture, Vector2 position, const SpriteData& spriteData)
 {
 	if (texture == nullptr) return;
 

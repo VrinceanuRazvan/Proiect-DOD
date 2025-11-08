@@ -1,16 +1,16 @@
 #include "PhysicsManager.h"
 
-void moveToTarget(Entity* entity, const Vector2& targetPos,float speed, float deltaTime)
+void PhysicalManager::moveToTarget(Entity* entity, const Vector2& targetPos, float deltaTime)
 {
     Vector2 direction = targetPos - entity->getPosition();
     float distance = Distance(entity->getPosition(), targetPos);
     if (distance > 0.0f) {
 		Vector2 normal = Normalize(direction);
-        entity->setVelocity(normal * speed);
+        entity->setVelocity(normal * 100.0f);
 	}
 }
 
-collision find_colliion(const Vector2& posA, float radiusA, const Vector2& posB, float radiusB)
+collision PhysicalManager::find_colliion(const Vector2& posA, float radiusA, const Vector2& posB, float radiusB)
 {
     collision result;
 
@@ -24,7 +24,7 @@ collision find_colliion(const Vector2& posA, float radiusA, const Vector2& posB,
     return result;
 }
 
-void resolve_collision(collision col, Entity* entityA, Entity* entityB)
+void PhysicalManager::resolve_collision(collision col, Entity* entityA, Entity* entityB)
 {
     Vector2 correction = col.normal * col.depth * 0.5f;
 

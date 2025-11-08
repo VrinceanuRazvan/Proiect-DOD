@@ -1,34 +1,35 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+
+#include "imgui.h"
+#include "imgui_impl_sdl3.h"
+#include <imgui_impl_sdlrenderer3.h>
+
 #include "../Managers/Renderer.h"
 #include "../Managers/EntityManager.h"
 #include "../Managers/PhysicsManager.h"
 
-class Game
-{
-private:
-	SDL_Window* window = NULL;
-	SDL_Renderer* renderer = NULL;
+namespace Game {
+	extern SDL_Window* window;
+	extern SDL_Renderer* renderer;
 
-	Uint64 lastFrameTime = 0;
+	extern int WINDOW_WIDTH;
+	extern int WINDOW_HEIGHT;
 
-	int WINDOW_WIDTH = 640;
-	int WINDOW_HEIGHT = 480;
+	extern Uint64 lastFrameTime;
+	extern float deltaTime;
 
-	Entity* entityArray[100000];
+	void init();
 
-	int entityCount = 0;
-
-public:
-	bool Init(int WINDOW_WIDTH,int WINDOW_HEIGHT);
 	void RunLoop();
-private:
-	bool EventHandler();
-	bool Update(float deltaTime);
-	bool Render(float deltaTime);
+
+	void EventHandler();
+	void Update(float deltaTime);
+	void Render(float deltaTime);
 
 	void SpawnEntity(Vector2 pos);
-};
+	void SpawnEntityRandom();
+}
 
 	

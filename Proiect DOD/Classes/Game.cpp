@@ -1,94 +1,121 @@
 #include "Game.h"
 
+namespace Game {
+	SDL_Window* window = NULL;
+	SDL_Renderer* renderer = NULL;
 
-bool Game::Init(int WINDOW_WIDTH = 640, int WINDOW_HEIGHT = 480)
+	int WINDOW_WIDTH = 640;
+	int WINDOW_HEIGHT = 480;
+
+	Uint64 lastFrameTime = SDL_GetTicks();
+	float deltaTime = 0;
+}
+
+void Game::init()
 {
-	this->WINDOW_WIDTH = WINDOW_WIDTH;
-	this->WINDOW_HEIGHT = WINDOW_HEIGHT;
+
 	SDL_CreateWindowAndRenderer("Proiect DOD", WINDOW_WIDTH, WINDOW_HEIGHT, NULL, &window, &renderer);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 	SDL_RenderPresent(renderer);
 
-	this->lastFrameTime = SDL_GetTicks();
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
 
-	for (int i = 0; i < 100000; i++) {
-		entityArray[i] = nullptr;
-	}
+	ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+	ImGui_ImplSDLRenderer3_Init(renderer);
 
-	return true;
+	EntityManager::init();
+
+	std::cout << EntityManager::spawnRate << std::endl;
 }
 
 void Game::RunLoop()
 {
 	Uint64 currentTime = SDL_GetTicks();
-	float deltaTime = (currentTime - this->lastFrameTime) / 1000.0f;
+	deltaTime = (currentTime - lastFrameTime) / 1000.0f;
 	if (deltaTime > 0.05f) deltaTime = 0.05f;
-	this->lastFrameTime = currentTime;
+	lastFrameTime = currentTime;
 
-	this->EventHandler();
-	this->Update(deltaTime);
-	this->Render(deltaTime);
+	ImGui_ImplSDLRenderer3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::Begin("Entity Spawner");
+	ImGui::Checkbox("Auto Spawn", &EntityManager::autoSpawn);
+	ImGui::SliderFloat("Spawn Rate (per second)", &EntityManager::spawnRate, 0.0f, 100.0f);
+	ImGui::Text("Entity Count: %d", EntityManager::entityCount);
+	ImGui::End();
+
+	EventHandler();
+
+	Update(deltaTime);
+
+	Render(deltaTime);
 }
 
-bool Game::EventHandler()
+void Game::EventHandler()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
+		ImGui_ImplSDL3_ProcessEvent(&event);
 		if (event.type == SDL_EVENT_QUIT) {
 			exit(0);
 		}
-		else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			SpawnEntity(Vector2(event.button.x, event.button.y));
-			entityCount++;
-		}
-	return true;
 }
 
-bool Game::Update(float deltaTime)
+void Game::Update(float deltaTime)
 {
-	for (int i = 0; i < entityCount; i++) {
-		if (entityArray[i] != nullptr) {
-			if (entityArray[i]->isStatic() == false) {
+	EntityManager::update(renderer, deltaTime);
 
-				moveToTarget(entityArray[i], Vector2(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f), 100.0f, deltaTime);
+	for (int i = 0; i < EntityManager::entityCount; i++) {
+		if (EntityManager::entityArray[i] != nullptr) {
+			if (EntityManager::entityArray[i]->isStatic() == false) {
 
-				for (int j = i + 1; j < entityCount; j++) {
-					if (entityArray[j] != nullptr and entityArray[i] != entityArray[j]) {
-						if (entityArray[j]->isStatic() == false) {
-							collision col = find_colliion(entityArray[i]->getPosition(), entityArray[i]->GetRadius(),
-								entityArray[j]->getPosition(), entityArray[j]->GetRadius());
+				PhysicalManager::moveToTarget(EntityManager::entityArray[i], Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT/2), deltaTime);
+
+				for (int j = i + 1; j < EntityManager::entityCount; j++) {
+					if (EntityManager::entityArray[j] != nullptr and EntityManager::entityArray[i] != EntityManager::entityArray[j]) {
+						if (EntityManager::entityArray[j]->isStatic() == false) {
+							collision col = PhysicalManager::find_colliion(EntityManager::entityArray[i]->getPosition(), EntityManager::entityArray[i]->GetRadius(),
+								EntityManager::entityArray[j]->getPosition(), EntityManager::entityArray[j]->GetRadius());
 							if (col.depth > 0.0f) {
-								resolve_collision(col, entityArray[i], entityArray[j]);
+								PhysicalManager::resolve_collision(col, EntityManager::entityArray[i], EntityManager::entityArray[j]);
 							}
 						}
 					}
 				}
 
-				entityArray[i]->update(deltaTime);
+				EntityManager::entityArray[i]->update(deltaTime);
 			}
 		}
 	}
-
-	return true;
 }
 
-bool Game::Render(float deltaTime)
+void Game::Render(float deltaTime)
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 
-	for (int i = 0; i < entityCount; i++) {
-		if (entityArray[i] != nullptr) {
-			RenderEntity(renderer, entityArray[i], deltaTime);
+	for (int i = 0; i < EntityManager::entityCount; i++) {
+		if (EntityManager::entityArray[i] != nullptr) {
+			Renderer::RenderEntity(renderer, EntityManager::entityArray[i], deltaTime);
 		}
 	}
 
+	ImGui::Render();
+	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
+
 	SDL_RenderPresent(renderer);
-	return true;
 }
 
 void Game::SpawnEntity(Vector2 pos)
 {
-	CreateEntity(entityArray,pos ,renderer);
+	EntityManager::CreateEntity(pos ,renderer);
+}
+
+void Game::SpawnEntityRandom()
+{
+	Vector2 pos = Vector2(rand() % WINDOW_WIDTH, rand() % WINDOW_HEIGHT);
+	SpawnEntity(pos);
 }
