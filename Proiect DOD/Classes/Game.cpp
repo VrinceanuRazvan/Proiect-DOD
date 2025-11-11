@@ -3,21 +3,15 @@
 namespace Game {
 	SDL_Window* window = NULL;
 	SDL_Renderer* renderer = NULL;
+	int WINDOW_WIDTH = 1280;
+	int WINDOW_HEIGHT = 1080;
 
-	int WINDOW_WIDTH = 640;
-	int WINDOW_HEIGHT = 480;
-
-	Uint64 lastFrameTime = SDL_GetTicks();
-	float deltaTime = 0;
+	bool isDOD = false;
 }
 
 void Game::init()
 {
-
-	SDL_CreateWindowAndRenderer("Proiect DOD", WINDOW_WIDTH, WINDOW_HEIGHT, NULL, &window, &renderer);
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
+	Renderer::init(renderer, window, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -26,32 +20,41 @@ void Game::init()
 	ImGui_ImplSDLRenderer3_Init(renderer);
 
 	EntityManager::init();
+	Clock::init();
 
 	std::cout << EntityManager::spawnRate << std::endl;
 }
 
 void Game::RunLoop()
 {
-	Uint64 currentTime = SDL_GetTicks();
-	deltaTime = (currentTime - lastFrameTime) / 1000.0f;
-	if (deltaTime > 0.05f) deltaTime = 0.05f;
-	lastFrameTime = currentTime;
+	Clock::Update();
 
 	ImGui_ImplSDLRenderer3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 
 	ImGui::Begin("Entity Spawner");
+	ImGui::Text("FPS: %.1f (%.2f ms/frame)", 1.0f / Clock::deltaTime, 1000.0f * Clock::deltaTime);
 	ImGui::Checkbox("Auto Spawn", &EntityManager::autoSpawn);
-	ImGui::SliderFloat("Spawn Rate (per second)", &EntityManager::spawnRate, 0.0f, 100.0f);
+	ImGui::Text("Mode: %s", isDOD ? "DOD" : "OOP");
+	if (ImGui::Button("Switch Mode")) {
+		Switch();
+	}
+	ImGui::SliderFloat("Spawn Rate (per second)", &EntityManager::spawnRate, 0.0f, 1000.0f);
 	ImGui::Text("Entity Count: %d", EntityManager::entityCount);
 	ImGui::End();
 
 	EventHandler();
 
-	Update(deltaTime);
+	Update(Clock::deltaTime);
 
-	Render(deltaTime);
+	Render(Clock::deltaTime);
+}
+
+void Game::Switch()
+{
+	isDOD = !isDOD;
+	EntityManager::Switch(isDOD);
 }
 
 void Game::EventHandler()
@@ -66,30 +69,9 @@ void Game::EventHandler()
 
 void Game::Update(float deltaTime)
 {
-	EntityManager::update(renderer, deltaTime);
+	EntityManager::update(deltaTime, isDOD);
 
-	for (int i = 0; i < EntityManager::entityCount; i++) {
-		if (EntityManager::entityArray[i] != nullptr) {
-			if (EntityManager::entityArray[i]->isStatic() == false) {
-
-				PhysicalManager::moveToTarget(EntityManager::entityArray[i], Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT/2), deltaTime);
-
-				for (int j = i + 1; j < EntityManager::entityCount; j++) {
-					if (EntityManager::entityArray[j] != nullptr and EntityManager::entityArray[i] != EntityManager::entityArray[j]) {
-						if (EntityManager::entityArray[j]->isStatic() == false) {
-							collision col = PhysicalManager::find_colliion(EntityManager::entityArray[i]->getPosition(), EntityManager::entityArray[i]->GetRadius(),
-								EntityManager::entityArray[j]->getPosition(), EntityManager::entityArray[j]->GetRadius());
-							if (col.depth > 0.0f) {
-								PhysicalManager::resolve_collision(col, EntityManager::entityArray[i], EntityManager::entityArray[j]);
-							}
-						}
-					}
-				}
-
-				EntityManager::entityArray[i]->update(deltaTime);
-			}
-		}
-	}
+	PhysicalManager::Update(deltaTime,isDOD);
 }
 
 void Game::Render(float deltaTime)
@@ -97,25 +79,10 @@ void Game::Render(float deltaTime)
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 
-	for (int i = 0; i < EntityManager::entityCount; i++) {
-		if (EntityManager::entityArray[i] != nullptr) {
-			Renderer::RenderEntity(renderer, EntityManager::entityArray[i], deltaTime);
-		}
-	}
+	Renderer::RenderEntities(renderer, EntityManager::entityArray, deltaTime, isDOD);
 
 	ImGui::Render();
 	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
 	SDL_RenderPresent(renderer);
-}
-
-void Game::SpawnEntity(Vector2 pos)
-{
-	EntityManager::CreateEntity(pos ,renderer);
-}
-
-void Game::SpawnEntityRandom()
-{
-	Vector2 pos = Vector2(rand() % WINDOW_WIDTH, rand() % WINDOW_HEIGHT);
-	SpawnEntity(pos);
 }

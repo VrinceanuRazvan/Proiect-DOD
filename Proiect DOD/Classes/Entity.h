@@ -8,12 +8,14 @@ private :
 
 	bool Static;
 public:
-	Entity(Vector2 _position, float _radius = 10, bool _isStatic = false);
+	Entity(int id ,Vector2 _position, float _radius = 10, bool _isStatic = false);
 
 	void update(float deltaTime);
 
 	void setVelocity(const Vector2 vel);
 	Vector2 getVelocity() const;
 	bool isStatic() const;
+
+	int GetId() const;
 };
 

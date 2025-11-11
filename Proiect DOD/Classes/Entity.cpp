@@ -1,7 +1,7 @@
 #include "Entity.h"
 
-Entity::Entity(Vector2 _position, float _radius , bool _isStatic)
-	: Instance(_position, _radius)
+Entity::Entity(int _id,Vector2 _position, float _radius , bool _isStatic)
+	: Instance(_position, _radius,_id)
 {
 	this->Static = _isStatic;
 	this->velocity = Vector2(0.0f, 0.0f);
@@ -27,4 +27,9 @@ Vector2 Entity::getVelocity() const
 bool Entity::isStatic() const
 {
 	return this->Static;
+}
+
+int Entity::GetId() const
+{
+	return this->id;
 }

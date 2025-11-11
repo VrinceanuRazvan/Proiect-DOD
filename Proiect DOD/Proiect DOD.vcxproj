@@ -17,6 +17,7 @@
     <ClCompile Include="Classes\Instance.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utility\Math.cpp" />
+    <ClCompile Include="Utility\Clock.cpp" />
     <ClCompile Include="Managers\PhysicsManager.cpp" />
     <ClCompile Include="Managers\Renderer.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
@@ -37,6 +38,7 @@
     <ClInclude Include="Managers\Renderer.h" />
     <ClInclude Include="Utility\SpriteData.h" />
     <ClInclude Include="Utility\Vector2.h" />
+    <ClInclude Include="Utility\Clock.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
