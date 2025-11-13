@@ -17,5 +17,5 @@ namespace Renderer {
 	void RenderEntities(SDL_Renderer* renderer, Entity* (&entityArray)[100000], float deltaTime, bool isDOD);
 	void RenderEntityOOP(SDL_Renderer* renderer, Entity* entity, float deltaTime);
 	void RenderEntityDOD(SDL_Renderer* renderer, int i, float deltaTime);
-	void DrawSprite(SDL_Renderer* renderer, SDL_Texture* texture, float positionX, float postionY, const SpriteData& spriteData);
+	void DrawSprite(SDL_Renderer* renderer, SDL_Texture* texture, Vector2 pos, const SpriteData& spriteData);
 }

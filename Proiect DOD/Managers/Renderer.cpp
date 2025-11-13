@@ -54,10 +54,9 @@ void Renderer::RenderEntityOOP(SDL_Renderer* renderer, Entity* entity, float del
 	SDL_Texture* texture = entityTexture[entity->GetId()];
 	if (texture == nullptr) return;
 
-	Vector2 position = entity->getPosition();
 	const SpriteData& spriteData = *entitySpriteData[entity->GetId()];
 
-	DrawSprite(renderer, texture, position.x , position.y, spriteData);
+	DrawSprite(renderer, texture, entity->getPosition(), spriteData);
 }
 
 void Renderer::RenderEntityDOD(SDL_Renderer* renderer, int i, float deltaTime)
@@ -67,15 +66,12 @@ void Renderer::RenderEntityDOD(SDL_Renderer* renderer, int i, float deltaTime)
 	SDL_Texture* texture = entityTexture[i];
 	if (texture == nullptr) return;
 
-	float positionX = EntityManager::entityPositionsX[i];
-	float positionY = EntityManager::entityPositionsY[i];
-
 	const SpriteData& spriteData = *entitySpriteData[i];
 
-	DrawSprite(renderer, texture, positionX, positionY, spriteData);
+	DrawSprite(renderer, texture, EntityManager::entityPositions[i], spriteData);
 }
 
-void Renderer::DrawSprite(SDL_Renderer* renderer, SDL_Texture* texture, float positionX , float postionY, const SpriteData& spriteData)
+void Renderer::DrawSprite(SDL_Renderer* renderer, SDL_Texture* texture, Vector2 pos, const SpriteData& spriteData)
 {
 	if (texture == nullptr) return;
 
@@ -86,8 +82,8 @@ void Renderer::DrawSprite(SDL_Renderer* renderer, SDL_Texture* texture, float po
 	srcRect.h = static_cast<float>(spriteData.frameHeight);
 
 	SDL_FRect dstRect;
-	dstRect.x = positionX - (spriteData.frameWidth / 2.0f);
-	dstRect.y = postionY - (spriteData.frameHeight / 2.0f);
+	dstRect.x = pos.x - (spriteData.frameWidth / 2.0f);
+	dstRect.y = pos.y - (spriteData.frameHeight / 2.0f);
 	dstRect.w = static_cast<float>(spriteData.frameWidth);
 	dstRect.h = static_cast<float>(spriteData.frameHeight);
 

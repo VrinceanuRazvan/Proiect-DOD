@@ -4,11 +4,8 @@ namespace EntityManager {
     Entity* entityArray[100000];
 
     // dod
-    float entityPositionsX[100000];
-    float entityPositionsY[100000];
-
-    float entityVelocitiesX[100000];
-    float entityVelocitiesY[100000];
+	Vector2 entityPositions[100000];
+	Vector2 entityVelocities[100000];
 
     float entityRadius[100000];
     bool entityStatic[100000];
@@ -41,9 +38,8 @@ void EntityManager::update(float deltaTime,bool isDOD)
 void EntityManager::CreateEntity(Vector2 position,bool isDOD)
 {
         if (isDOD) {
-            if (entityPositionsX[entityCount] == 0.0f && entityPositionsY[entityCount] == 0.0f) {
-                entityPositionsX[entityCount] = position.x;
-                entityPositionsY[entityCount] = position.y;
+            if (entityPositions[entityCount].x == 0 and entityPositions[entityCount].y == 0) {
+				entityPositions[entityCount] = position;
 
 				entityRadius[entityCount] = 10.0f;
 				entityStatic[entityCount] = false;
@@ -68,8 +64,7 @@ void EntityManager::Switch(bool isDOD)
     if (isDOD) {
         for (int i = 0; i < entityCount; i++) {
             if (entityArray[i] != nullptr) {
-                entityPositionsX[i] = entityArray[i]->getPosition().x;
-                entityPositionsY[i] = entityArray[i]->getPosition().y;
+				entityPositions[i] = entityArray[i]->getPosition();
 
                 entityRadius[i] = entityArray[i]->GetRadius();
                 entityStatic[i] = entityArray[i]->isStatic();
@@ -81,10 +76,9 @@ void EntityManager::Switch(bool isDOD)
     }
     else {
         for (int i = 0; i < entityCount; i++) {
-            if (entityPositionsX[i] != 0.0f || entityPositionsY[i] != 0.0f) {
-                entityArray[i] = new Entity(i, Vector2(entityPositionsX[i], entityPositionsY[i]),entityRadius[i],entityStatic[i]);
-                entityPositionsX[i] = NULL;
-                entityPositionsY[i] = NULL;
+            if (entityPositions[i].x == 0 and entityPositions[i].y ==0) {
+                entityArray[i] = new Entity(i, entityPositions[i], entityRadius[i], entityStatic[i]);
+				entityPositions[i] = Vector2(0, 0);
                 entityRadius[i] = NULL;
                 entityStatic[i] = NULL;
             }
